@@ -39,6 +39,16 @@ BEGIN
     SET p_booking_id = NULL;
     SET p_token_no = NULL;
 
+    IF p_items IS NULL OR JSON_TYPE(p_items) <> 'ARRAY' THEN
+    SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Items must be a JSON array';
+    END IF;
+
+    IF JSON_LENGTH(p_items) = 0 THEN
+    SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Booking must contain at least one item';
+    END IF;
+    
     IF p_booking_date IS NULL OR p_booking_date < CURDATE() THEN
         SIGNAL SQLSTATE '45000'
             SET MESSAGE_TEXT = 'Invalid booking date';
@@ -57,15 +67,61 @@ BEGIN
         CHECK (quantity > 0)
     );
 
-    INSERT INTO tmp_booking_items (item_id, quantity)
-    SELECT item_id, quantity
+
+-- Validate that each entry has a positive integer item ID
+-- and a positive integer quantity.
+IF EXISTS (
+    SELECT 1
     FROM JSON_TABLE(
         p_items,
         '$[*]' COLUMNS (
-            item_id INT PATH '$.item_id',
+            item_id INT PATH '$.item_id'
+                NULL ON EMPTY NULL ON ERROR,
             quantity INT PATH '$.quantity'
+                NULL ON EMPTY NULL ON ERROR
         )
+    ) AS jt
+    WHERE jt.item_id IS NULL
+       OR jt.item_id <= 0
+       OR jt.quantity IS NULL
+       OR jt.quantity <= 0
+) THEN
+    SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Each item needs a positive item ID and quantity';
+END IF;
+
+-- Reject duplicate item IDs before inserting into the temporary table.
+IF (
+    SELECT COUNT(*)
+    FROM JSON_TABLE(
+        p_items,
+        '$[*]' COLUMNS (
+            item_id INT PATH '$.item_id'
+        )
+    ) AS jt
+    ) <> (
+    SELECT COUNT(DISTINCT item_id)
+    FROM JSON_TABLE(
+        p_items,
+        '$[*]' COLUMNS (
+            item_id INT PATH '$.item_id'
+        )
+    ) AS jt
+    ) THEN
+    SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Duplicate item IDs are not allowed';
+    END IF;
+
+    INSERT INTO tmp_booking_items (item_id, quantity)
+    SELECT item_id, quantity
+    FROM JSON_TABLE(
+    p_items,
+    '$[*]' COLUMNS (
+        item_id INT PATH '$.item_id',
+        quantity INT PATH '$.quantity'
+    )
     ) AS jt;
+
 
     SELECT COUNT(*) INTO v_item_count
     FROM tmp_booking_items;
