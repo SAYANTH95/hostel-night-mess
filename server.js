@@ -232,6 +232,63 @@ app.get('/api/bookings/:id', async (req, res) => {
 });
 
 
+app.get('/api/slots', async (req, res) => {
+  try {
+    const date = req.query.date || new Date().toLocaleDateString('en-CA');
+
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      return res.status(400).json({
+        error: 'Date must be in YYYY-MM-DD format'
+      });
+    }
+
+    const [rows] = await pool.query(`
+      SELECT
+        ts.slot_id,
+        TIME_FORMAT(ts.start_time, '%H:%i') AS start_time,
+        TIME_FORMAT(ts.end_time, '%H:%i') AS end_time,
+        ts.max_orders,
+        COUNT(b.booking_id) AS booked_orders,
+        GREATEST(
+          ts.max_orders - COUNT(b.booking_id),
+          0
+        ) AS remaining_capacity,
+        CASE
+          WHEN COUNT(b.booking_id) >= ts.max_orders THEN FALSE
+          ELSE TRUE
+        END AS is_available
+      FROM Time_Slot ts
+      LEFT JOIN Booking b
+        ON b.slot_id = ts.slot_id
+       AND b.booking_date = ?
+       AND b.status IN (
+         'PLACED',
+         'CONFIRMED',
+         'PREPARING',
+         'READY'
+       )
+      GROUP BY
+        ts.slot_id,
+        ts.start_time,
+        ts.end_time,
+        ts.max_orders
+      ORDER BY ts.start_time
+    `, [date]);
+
+    res.json({
+      date,
+      count: rows.length,
+      slots: rows
+    });
+  } catch (error) {
+    console.error('Slot query failed:', error.message);
+    res.status(500).json({
+      error: 'Unable to load pickup slots'
+    });
+  }
+});
+
+
 const port = Number(process.env.PORT) || 3000;
 
 app.listen(port, () => {
