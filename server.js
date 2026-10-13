@@ -19,6 +19,27 @@ const pool = mysql.createPool({
   connectionLimit: 10
 });
 
+
+function isValidDateString(value) {
+  if (typeof value !== 'string') return false;
+
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  if (!match) return false;
+
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+
+  const date = new Date(Date.UTC(year, month - 1, day));
+
+  return (
+    date.getUTCFullYear() === year &&
+    date.getUTCMonth() === month - 1 &&
+    date.getUTCDate() === day
+  );
+}
+
+
 app.get('/api/health', async (req, res) => {
   try {
     const [rows] = await pool.query('SELECT 1 AS database_connected');
@@ -67,8 +88,7 @@ app.post('/api/bookings', async (req, res) => {
   if (
     !Number.isInteger(student_id) || student_id <= 0 ||
     !Number.isInteger(slot_id) || slot_id <= 0 ||
-    typeof booking_date !== 'string' ||
-    !/^\d{4}-\d{2}-\d{2}$/.test(booking_date) ||
+    !isValidDateString(booking_date) ||
     !Array.isArray(items) || items.length === 0 ||
     !['UPI', 'COUNTER'].includes(payment_mode)
   ) {
@@ -130,7 +150,7 @@ app.get('/api/queue', async (req, res) => {
   try {
     const date = req.query.date || new Date().toLocaleDateString('en-CA');
 
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    if (!isValidDateString(date)) {
       return res.status(400).json({
         error: 'Date must be in YYYY-MM-DD format'
       });
@@ -239,7 +259,7 @@ app.get('/api/slots', async (req, res) => {
   try {
     const date = req.query.date || new Date().toLocaleDateString('en-CA');
 
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    if (!isValidDateString(date)) {
       return res.status(400).json({
         error: 'Date must be in YYYY-MM-DD format'
       });

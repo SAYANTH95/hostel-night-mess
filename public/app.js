@@ -323,9 +323,16 @@ bookingDateInput.addEventListener('change', () => {
   loadPickupSlots();
 });
 
+let isBookingInProgress = false;
 bookingForm.addEventListener('submit', async (event) => {
   event.preventDefault();
+    
+  if (isBookingInProgress) {
+  return;
+    }
 
+    isBookingInProgress = true;
+    
   if (cart.size === 0) {
     bookingMessage.textContent = 'Please add at least one item to your cart.';
     bookingMessage.className = 'message error';
@@ -372,11 +379,24 @@ bookingForm.addEventListener('submit', async (event) => {
       })
     });
 
-    const result = await response.json();
+    
+    const responseText = await response.text();
+    let result;
 
-    if (!response.ok) {
-      throw new Error(result.error || 'Booking could not be created');
-    }
+    try {
+        result = JSON.parse(responseText);
+    } catch {
+        throw new Error(
+        'Unexpected server response. Please try again or check the server terminal.'
+    );
+}
+
+if (!response.ok) {
+  throw new Error(
+    result.error || 'Booking could not be created. Please try again.'
+  );
+}
+
 
     bookingConfirmation.replaceChildren();
 
@@ -408,6 +428,7 @@ bookingForm.addEventListener('submit', async (event) => {
     bookingMessage.textContent = error.message;
     bookingMessage.className = 'message error';
   } finally {
+    isBookingInProgress = false;
     submitBookingButton.disabled = false;
     submitBookingButton.textContent = 'Confirm booking';
   }
