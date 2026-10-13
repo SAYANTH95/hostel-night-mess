@@ -123,6 +123,49 @@ app.post('/api/bookings', async (req, res) => {
   }
 });
 
+app.get('/api/queue', async (req, res) => {
+  try {
+    const date = req.query.date || new Date().toLocaleDateString('en-CA');
+
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      return res.status(400).json({
+        error: 'Date must be in YYYY-MM-DD format'
+      });
+    }
+
+    const [rows] = await pool.query(`
+      SELECT
+        qt.token_id,
+        qt.token_no,
+        DATE_FORMAT(qt.token_date, '%Y-%m-%d') AS token_date,
+        qt.queue_status,
+        qt.issued_at,
+        b.booking_id,
+        b.student_id,
+        b.slot_id,
+        DATE_FORMAT(b.booking_date, '%Y-%m-%d') AS booking_date,
+        b.status AS booking_status,
+        b.total_amount
+      FROM Queue_Token qt
+      INNER JOIN Booking b
+        ON qt.booking_id = b.booking_id
+      WHERE qt.token_date = ?
+        AND qt.queue_status IN ('WAITING', 'PREPARING', 'READY')
+      ORDER BY qt.token_no ASC
+    `, [date]);
+
+    res.json({
+      date,
+      count: rows.length,
+      queue: rows
+    });
+  } catch (error) {
+    console.error('Queue query failed:', error.message);
+    res.status(500).json({
+      error: 'Unable to load queue'
+    });
+  }
+});
 
 const port = Number(process.env.PORT) || 3000;
 
