@@ -1,0 +1,175 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#14251c">
+  <title>Night Mess | Food Booking</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#">
+      <span class="brand-icon">NM</span>
+      <span>Night Mess</span>
+    </a>
+    <span class="service-label">HOSTEL DINING</span>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <p class="eyebrow">YOUR NIGHT, YOUR MEAL</p>
+      <h1>Late-night cravings,<br><span>sorted.</span></h1>
+      <p class="hero-description">
+        Browse tonight's menu, choose your food and reserve a pickup slot.
+      </p>
+      <div class="hero-note">
+        <span class="status-dot"></span>
+        <span>Menu and stock updated from the mess database</span>
+      </div>
+    </section>
+
+    <section class="menu-section">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">MADE FOR YOUR EVENINGS</p>
+          <h2>Tonight's menu</h2>
+        </div>
+        <button id="refresh-menu" class="secondary-button" type="button">
+          Refresh menu
+        </button>
+      </div>
+
+      <p id="menu-message" class="message" role="status">
+        Loading menu...
+      </p>
+
+      <div id="menu-list" class="menu-grid"></div>
+    </section>
+
+    <section class="cart-section">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">YOUR SELECTION</p>
+          <h2>Order summary</h2>
+        </div>
+        <span id="cart-count" class="count-badge">0 items</span>
+      </div>
+
+      <div id="cart-list" class="cart-list">
+        <p class="empty-state">Your selection is empty. Add something from the menu.</p>
+      </div>
+
+      <div class="cart-total">
+        <span>Estimated total</span>
+        <strong id="cart-total">₹0.00</strong>
+      </div>
+    </section>
+
+
+    <section class="booking-section" id="booking-section">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">ALMOST THERE</p>
+          <h2>Complete your booking</h2>
+        </div>
+      </div>
+
+      <form id="booking-form">
+        <div class="form-grid">
+          <div class="form-field">
+            <label for="student-id">Student ID</label>
+            <input
+              id="student-id"
+              name="student_id"
+              type="number"
+              min="1"
+              step="1"
+              placeholder="e.g. 1"
+              required
+            >
+          </div>
+
+          <div class="form-field">
+            <label for="booking-date">Pickup date</label>
+            <input
+              id="booking-date"
+              name="booking_date"
+              type="date"
+              required
+            >
+          </div>
+
+          <div class="form-field">
+            <label for="pickup-slot">Pickup slot</label>
+            <select id="pickup-slot" name="slot_id" required>
+              <option value="">Choose a date first</option>
+            </select>
+          </div>
+
+          <div class="form-field">
+            <label for="payment-mode">Payment method</label>
+            <select id="payment-mode" name="payment_mode" required>
+              <option value="COUNTER">Pay at counter</option>
+              <option value="UPI">UPI</option>
+            </select>
+          </div>
+        </div>
+
+        <p id="booking-message" class="message" role="status"></p>
+
+        <button id="submit-booking" class="confirm-button" type="submit">
+          Confirm booking
+        </button>
+      </form>
+
+      <div id="booking-confirmation" class="confirmation" hidden></div>
+    </section>
+
+
+    <section class="lookup-section" id="lookup-section">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">ORDER TRACKING</p>
+          <h2>Check your booking</h2>
+          <p class="lookup-description">
+            Enter your booking ID to view your order and current queue status.
+          </p>
+        </div>
+      </div>
+
+      <form id="lookup-form" class="lookup-form">
+        <div class="form-field">
+          <label for="lookup-booking-id">Booking ID</label>
+          <input
+            id="lookup-booking-id"
+            name="booking_id"
+            type="number"
+            min="1"
+            step="1"
+            placeholder="e.g. 3"
+            required
+          >
+        </div>
+
+        <button id="lookup-button" class="confirm-button" type="submit">
+          Find booking
+        </button>
+      </form>
+
+      <p id="lookup-message" class="message" role="status"></p>
+
+      <div id="lookup-result" class="lookup-result" hidden></div>
+    </section>
+
+
+    <footer class="footer">
+      <p>Hostel Night Mess Booking System</p>
+      <p>Built for convenient, organised pickup.</p>
+    </footer>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
