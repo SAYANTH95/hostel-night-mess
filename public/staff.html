@@ -1,0 +1,105 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Staff Dashboard | Night Mess</title>
+  <link rel="stylesheet" href="staff.css">
+  <script src="staff.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <p class="eyebrow">HOSTEL NIGHT MESS</p>
+      <h1>Staff Dashboard</h1>
+    </div>
+    <a href="/">Student Booking</a>
+  </header>
+
+  <main class="dashboard">
+    <section class="intro">
+      <div>
+        <h2>Live pickup queue</h2>
+        <p>Review bookings and manage order preparation.</p>
+      </div>
+      <button id="refresh-queue" type="button">Refresh queue</button>
+    </section>
+
+    <p id="queue-message" role="status">Loading queue...</p>
+
+    <section class="stats" aria-label="Queue summary">
+      <article class="stat-card">
+        <span>Waiting</span>
+        <strong id="waiting-count">0</strong>
+      </article>
+      <article class="stat-card">
+        <span>Preparing</span>
+        <strong id="preparing-count">0</strong>
+      </article>
+      <article class="stat-card">
+        <span>Ready</span>
+        <strong id="ready-count">0</strong>
+      </article>
+    </section>
+
+    <section class="queue-section">
+      <h2>Today's orders</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Token</th>
+              <th>Booking</th>
+              <th>Student</th>
+              <th>Slot</th>
+              <th>Amount</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="queue-table-body">
+            <tr>
+              <td colspan="7">Loading queue...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+<section class="queue-section">
+  <div class="section-heading">
+    <h2>Completed Orders</h2>
+    <p>Orders collected by students today.</p>
+  </div>
+
+<div class="completed-toolbar">
+  <p id="completed-message">Loading completed orders...</p>
+  <button id="refresh-completed" type="button">
+    Refresh Completed Orders
+  </button>
+</div>
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th>Token</th>
+          <th>Booking</th>
+          <th>Student</th>
+          <th>Slot</th>
+          <th>Amount</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="completed-table-body">
+        <tr>
+          <td colspan="6">Loading completed orders...</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+  </main>
+</body>
+</html>

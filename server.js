@@ -191,6 +191,150 @@ app.get('/api/queue', async (req, res) => {
 });
 
 
+app.get('/api/queue/completed', async (req, res) => {
+  try {
+    const date = req.query.date || new Date().toLocaleDateString('en-CA');
+
+    if (!isValidDateString(date)) {
+      return res.status(400).json({
+        error: 'Date must be a valid date in YYYY-MM-DD format'
+      });
+    }
+
+    const [rows] = await pool.query(`
+      SELECT
+        qt.token_id,
+        qt.token_no,
+        DATE_FORMAT(qt.token_date, '%Y-%m-%d') AS token_date,
+        qt.queue_status,
+        qt.issued_at,
+        b.booking_id,
+        b.student_id,
+        b.slot_id,
+        DATE_FORMAT(b.booking_date, '%Y-%m-%d') AS booking_date,
+        b.status AS booking_status,
+        b.total_amount
+      FROM Queue_Token qt
+      INNER JOIN Booking b
+        ON qt.booking_id = b.booking_id
+      WHERE qt.token_date = ?
+        AND qt.queue_status = 'COLLECTED'
+      ORDER BY qt.token_no ASC
+    `, [date]);
+
+    res.json({
+      date,
+      count: rows.length,
+      queue: rows
+    });
+  } catch (error) {
+    console.error('Completed queue query failed:', error.message);
+    res.status(500).json({
+      error: 'Unable to load completed orders'
+    });
+  }
+});
+
+
+app.patch('/api/queue/:tokenId/status', async (req, res) => {
+  const tokenId = Number(req.params.tokenId);
+  const { status } = req.body;
+
+  const allowedTransitions = {
+    WAITING: 'PREPARING',
+    PREPARING: 'READY',
+    READY: 'COLLECTED'
+  };
+
+  if (!Number.isInteger(tokenId) || tokenId <= 0) {
+    return res.status(400).json({
+      error: 'Token ID must be a positive integer'
+    });
+  }
+
+  if (!Object.values(allowedTransitions).includes(status)) {
+    return res.status(400).json({
+      error: 'Invalid target queue status'
+    });
+  }
+
+  let connection;
+
+  try {
+    connection = await pool.getConnection();
+    await connection.beginTransaction();
+
+    const [tokens] = await connection.query(
+      `SELECT token_id, booking_id, queue_status
+       FROM Queue_Token
+       WHERE token_id = ?
+       FOR UPDATE`,
+      [tokenId]
+    );
+
+    if (tokens.length === 0) {
+      await connection.rollback();
+      return res.status(404).json({
+        error: 'Queue token not found'
+      });
+    }
+
+    const token = tokens[0];
+
+    if (allowedTransitions[token.queue_status] !== status) {
+      await connection.rollback();
+      return res.status(409).json({
+        error: `Cannot change queue status from ${token.queue_status} to ${status}`
+      });
+    }
+
+    await connection.query(
+      `UPDATE Queue_Token
+       SET queue_status = ?
+       WHERE token_id = ?`,
+      [status, tokenId]
+    );
+
+    const bookingStatus = {
+      PREPARING: 'PREPARING',
+      READY: 'READY',
+      COLLECTED: 'COLLECTED'
+    }[status];
+
+    await connection.query(
+      `UPDATE Booking
+       SET status = ?
+       WHERE booking_id = ?`,
+      [bookingStatus, token.booking_id]
+    );
+
+    await connection.commit();
+
+    return res.json({
+      message: 'Queue status updated successfully',
+      token_id: tokenId,
+      booking_id: token.booking_id,
+      queue_status: status,
+      booking_status: bookingStatus
+    });
+  } catch (error) {
+    if (connection) {
+      await connection.rollback();
+    }
+
+    console.error('Queue status update failed:', error.message);
+
+    return res.status(500).json({
+      error: 'Unable to update queue status'
+    });
+  } finally {
+    if (connection) {
+      connection.release();
+    }
+  }
+});
+
+
 app.get('/api/bookings/:id', async (req, res) => {
   const bookingId = Number(req.params.id);
 

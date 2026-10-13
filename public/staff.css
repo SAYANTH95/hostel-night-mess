@@ -1,0 +1,305 @@
+
+:root {
+  --green-dark: #183f32;
+  --green: #28634c;
+  --green-light: #e7f1e9;
+  --cream: #f7f5ed;
+  --white: #ffffff;
+  --text: #23352c;
+  --muted: #758078;
+  --border: #e0e6df;
+  --orange-light: #fff0d8;
+  --orange-dark: #9a5b13;
+  --blue-light: #e5efff;
+  --blue-dark: #2856a2;
+  --radius: 14px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--cream);
+  color: var(--text);
+  font-family: Arial, Helvetica, sans-serif;
+  line-height: 1.5;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 22px 6%;
+  background: var(--green-dark);
+  color: var(--white);
+}
+
+.eyebrow {
+  margin: 0 0 4px;
+  color: #c4ddc9;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+}
+
+.topbar h1 {
+  margin: 0;
+  font-size: 1.6rem;
+}
+
+.topbar a {
+  color: var(--white);
+  text-decoration: none;
+  border: 1px solid #789b87;
+  border-radius: 9px;
+  padding: 9px 13px;
+}
+
+.topbar a:hover {
+  background: var(--green);
+}
+
+.dashboard {
+  width: min(1200px, 90%);
+  margin: 34px auto;
+}
+
+.intro {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 20px;
+}
+
+.intro h2,
+.queue-section h2 {
+  margin: 0 0 5px;
+}
+
+.intro p {
+  margin: 0;
+  color: var(--muted);
+}
+
+button {
+  border: 0;
+  border-radius: 9px;
+  padding: 11px 16px;
+  background: var(--green);
+  color: var(--white);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+button:hover {
+  background: var(--green-dark);
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+#queue-message {
+  min-height: 24px;
+  color: var(--muted);
+}
+
+#queue-message.error {
+  color: #b42318;
+}
+
+#queue-message.success {
+  color: var(--green);
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  margin: 22px 0 32px;
+}
+
+.stat-card {
+  padding: 22px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 3px 12px rgb(24 63 50 / 4%);
+}
+
+.stat-card span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.stat-card strong {
+  display: block;
+  margin-top: 6px;
+  color: var(--green-dark);
+  font-size: 2rem;
+}
+
+.queue-section {
+  padding: 24px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.queue-section h2 {
+  margin-bottom: 20px;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  white-space: nowrap;
+}
+
+th,
+td {
+  padding: 14px 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+th {
+  background: #f4f7f2;
+  color: var(--muted);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+tbody tr:hover {
+  background: #fafbf8;
+}
+
+.status {
+  display: inline-block;
+  padding: 5px 9px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.status-waiting {
+  background: var(--orange-light);
+  color: var(--orange-dark);
+}
+
+.status-preparing {
+  background: var(--blue-light);
+  color: var(--blue-dark);
+}
+
+.status-ready {
+  background: var(--green-light);
+  color: var(--green);
+}
+
+.empty-row {
+  padding: 28px;
+  color: var(--muted);
+  text-align: center;
+}
+
+@media (max-width: 700px) {
+  .topbar {
+    align-items: flex-start;
+    padding: 20px 5%;
+  }
+
+  .topbar h1 {
+    font-size: 1.3rem;
+  }
+
+  .dashboard {
+    width: 92%;
+    margin: 24px auto;
+  }
+
+  .intro {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .stats {
+    gap: 10px;
+  }
+
+  .stat-card {
+    padding: 15px 12px;
+  }
+
+  .stat-card strong {
+    font-size: 1.6rem;
+  }
+
+  .queue-section {
+    padding: 15px;
+  }
+}
+
+@media (max-width: 420px) {
+  .stats {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* Completed orders toolbar */
+.completed-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.completed-toolbar p {
+  margin: 0;
+}
+
+/* Collected order status */
+.status-collected {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 20px;
+  background-color: #e1f3e8;
+  color: #216747;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+/* Consistent spacing between dashboard sections */
+.queue-section + .queue-section {
+  margin-top: 24px;
+}
+
+@media (max-width: 600px) {
+  .completed-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .completed-toolbar button {
+    width: 100%;
+  }
+}
