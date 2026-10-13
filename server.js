@@ -167,6 +167,71 @@ app.get('/api/queue', async (req, res) => {
   }
 });
 
+
+app.get('/api/bookings/:id', async (req, res) => {
+  const bookingId = Number(req.params.id);
+
+  if (!Number.isInteger(bookingId) || bookingId <= 0) {
+    return res.status(400).json({
+      error: 'Booking ID must be a positive integer'
+    });
+  }
+
+  try {
+    const [bookings] = await pool.query(`
+      SELECT
+        b.booking_id,
+        b.student_id,
+        b.slot_id,
+        DATE_FORMAT(b.booking_date, '%Y-%m-%d') AS booking_date,
+        b.status AS booking_status,
+        b.total_amount,
+        qt.token_no,
+        qt.queue_status,
+        p.mode AS payment_mode,
+        p.amount AS payment_amount,
+        p.pay_status AS payment_status
+      FROM Booking b
+      LEFT JOIN Queue_Token qt
+        ON b.booking_id = qt.booking_id
+      LEFT JOIN Payment p
+        ON b.booking_id = p.booking_id
+      WHERE b.booking_id = ?
+    `, [bookingId]);
+
+    if (bookings.length === 0) {
+      return res.status(404).json({
+        error: 'Booking not found'
+      });
+    }
+
+    const [items] = await pool.query(`
+      SELECT
+        bi.item_id,
+        m.item_name,
+        bi.quantity,
+        bi.unit_price,
+        (bi.quantity * bi.unit_price) AS subtotal
+      FROM Booking_Item bi
+      INNER JOIN Menu_Item m
+        ON bi.item_id = m.item_id
+      WHERE bi.booking_id = ?
+      ORDER BY bi.item_id
+    `, [bookingId]);
+
+    res.json({
+      ...bookings[0],
+      items
+    });
+  } catch (error) {
+    console.error('Booking lookup failed:', error.message);
+    res.status(500).json({
+      error: 'Unable to retrieve booking'
+    });
+  }
+});
+
+
 const port = Number(process.env.PORT) || 3000;
 
 app.listen(port, () => {
